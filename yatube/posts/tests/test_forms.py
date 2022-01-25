@@ -157,7 +157,7 @@ class PostFormTests(TestCase):
 
     def test_create_post_guest(self):
         """Проверка формы редактирования поста гостем."""
-        group_field = PostFormTests.group_old.id
+        group_field = self.group_old.id
         login_url = reverse('login')
         create_url = reverse('posts:post_create')
         expected_redirect = f'{login_url}?next={create_url}'
@@ -173,19 +173,3 @@ class PostFormTests(TestCase):
         self.assertRedirects(
             response, expected_redirect
         )
-
-    def test_index_context(self):
-        small_gif = (            
-             b'\x47\x49\x46\x38\x39\x61\x02\x00'
-             b'\x01\x00\x80\x00\x00\x00\x00\x00'
-             b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
-             b'\x00\x00\x00\x2C\x00\x00\x00\x00'
-             b'\x02\x00\x01\x00\x00\x02\x02\x0C'
-             b'\x0A\x00\x3B'
-        )
-        uploaded = SimpleUploadedFile(
-            name='small.gif',
-            content=small_gif,
-            content_type='image/gif'
-        )
-    

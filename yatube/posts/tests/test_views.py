@@ -200,7 +200,10 @@ class PostPagesTests(TestCase):
         response = self.authorized_client.get(
             reverse('posts:post_detail', kwargs={'post_id': self.post.pk})
         )
-        self.assertEqual(response.context['comments'][0].text, self.comment.text)
+        self.assertEqual(
+            response.context['comments'][0].text,
+            self.comment.text
+        )
 
     def test_add_comment2(self):
         """После успешной отправки комментарий появляется на странице поста"""
@@ -267,7 +270,6 @@ class FollowViewTest(TestCase):
     def setUp(self):
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
-        #self.authorized_client.force_login(self.user_2)
 
     def test_follow_another_user(self):
         """Авторизованный пользователь,
