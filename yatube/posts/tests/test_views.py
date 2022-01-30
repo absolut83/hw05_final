@@ -290,7 +290,7 @@ class FollowViewTest(TestCase):
         self.authorized_client.get(reverse("posts:profile_unfollow",
                                            kwargs={'username': self.user_2}))
         self.assertFalse(Follow.objects.filter(user=self.user,
-                                                author=self.user_2).exists())
+                                               author=self.user_2).exists())
 
     def test_new_post_follow(self):
         """ Новая запись пользователя будет в ленте у тех кто на него
