@@ -32,7 +32,7 @@ class CommentAdmin(admin.ModelAdmin):
     list_display = (
         'pk',
         'author',
-        'text',        
+        'text',
         'created'
     )
     search_fields = ('text',)

@@ -281,7 +281,7 @@ class FollowViewTest(TestCase):
         self.authorized_client.get(reverse('posts:profile_follow',
                                            kwargs={'username': self.user_2}))
         self.assertTrue(Follow.objects.filter(user=self.user,
-                                             author=self.user_2).exists())
+                                              author=self.user_2).exists())
         self.assertEqual(Follow.objects.count(), follow_count + 1)
 
     def test_unfollow_another_user(self):
@@ -290,7 +290,7 @@ class FollowViewTest(TestCase):
         self.authorized_client.get(reverse("posts:profile_unfollow",
                                            kwargs={'username': self.user_2}))
         self.assertFalse(Follow.objects.filter(user=self.user,
-                                             author=self.user_2).exists())
+                                                author=self.user_2).exists())
 
     def test_new_post_follow(self):
         """ Новая запись пользователя будет в ленте у тех кто на него
@@ -312,7 +312,11 @@ class FollowViewTest(TestCase):
         )
         self.client.login(username='somobody_temp')
         response = self.authorized_client.get(reverse("posts:follow_index"))
-        self.assertNotIn(self.post.text, response.context['paginator'].object_list)
+        self.assertNotIn(
+            self.post.text,
+            response.context['paginator'].object_list
+        )
+
 
 class PaginatorViewsTest(TestCase):
     @classmethod
