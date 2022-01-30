@@ -87,6 +87,7 @@ class TaskURLTests(TestCase):
             reverse('posts:post_create'): 'posts/post_create.html',
             reverse('posts:post_edit', kwargs={'post_id': self.post.pk}):
                 'posts/post_create.html',
+            reverse('posts:follow_index'): 'posts/follow.html',
         }
         for url, template in templates_url_names.items():
             with self.subTest(url=url):

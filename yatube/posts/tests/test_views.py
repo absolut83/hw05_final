@@ -242,6 +242,10 @@ class FollowViewTest(TestCase):
         cls.user_2 = User.objects.create_user(
             username='TestArtov'
         )
+        cls.follow = Follow.objects.create(
+            author=cls.user,
+            user=cls.user_2
+        )
         # Создали первую группу
         cls.group_1 = Group.objects.create(
             title='Название группы для теста_1',
@@ -259,7 +263,6 @@ class FollowViewTest(TestCase):
             author=cls.user,
             text='Текст поста для теста',
             group=cls.group_1,
-            pk=1,
         )
         cls.comment = Comment.objects.create(
             post=cls.post,
@@ -274,26 +277,24 @@ class FollowViewTest(TestCase):
     def test_follow_another_user(self):
         """Авторизованный пользователь,
         может подписываться на других пользователей"""
+        follow_count = Follow.objects.count()
         self.authorized_client.get(reverse('posts:profile_follow',
                                            kwargs={'username': self.user_2}))
-        follow_exist = Follow.objects.filter(user=self.user,
-                                             author=self.user_2).exists()
-        self.assertEqual(True, follow_exist)
+        self.assertTrue(Follow.objects.filter(user=self.user,
+                                             author=self.user_2).exists())
+        self.assertEqual(Follow.objects.count(), follow_count + 1)
 
     def test_unfollow_another_user(self):
         """Авторизованный пользователь,
         может удалять других пользователей из подписок"""
-        self.authorized_client.get(reverse('posts:profile_follow',
-                                           kwargs={'username': self.user_2}))
         self.authorized_client.get(reverse("posts:profile_unfollow",
                                            kwargs={'username': self.user_2}))
-        follow_exist = Follow.objects.filter(user=self.user,
-                                             author=self.user_2).exists()
-        self.assertEqual(False, follow_exist)
+        self.assertFalse(Follow.objects.filter(user=self.user,
+                                             author=self.user_2).exists())
 
-    def test_new_post(self):
+    def test_new_post_follow(self):
         """ Новая запись пользователя будет в ленте у тех кто на него
-            подписан и не будет у тех кто не подписан на него.
+            подписан.
         """
         following = User.objects.create(username='following')
         Follow.objects.create(user=self.user, author=following)
@@ -301,6 +302,9 @@ class FollowViewTest(TestCase):
         response = self.authorized_client.get(reverse("posts:follow_index"))
         self.assertIn(post, response.context['paginator'].object_list)
 
+    def test_new_post_unfollow(self):
+        """ Новая запись пользователя не будет у тех кто не подписан на него.
+        """
         self.client.logout()
         User.objects.create_user(
             username='somobody_temp',
@@ -308,8 +312,7 @@ class FollowViewTest(TestCase):
         )
         self.client.login(username='somobody_temp')
         response = self.authorized_client.get(reverse("posts:follow_index"))
-        self.assertNotIn(post.text, response.context['paginator'].object_list)
-
+        self.assertNotIn(self.post.text, response.context['paginator'].object_list)
 
 class PaginatorViewsTest(TestCase):
     @classmethod
@@ -377,7 +380,7 @@ class PaginatorViewsTest(TestCase):
             posts_count_2_pages
         )
 
-    def test_profile_page_Paginator(self):
+    def test_profile_page_paginator(self):
         """Шаблон profile список постов, отфильтрованных по пользователю."""
         posts_count = Post.objects.count()
         posts_count_2_pages = posts_count - settings.DEFAULT_POSTS_PER_PAGE

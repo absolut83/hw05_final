@@ -7,7 +7,8 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
-from posts.models import Group, Post
+from posts.models import Group, Post, Comment
+from posts.forms import PostForm
 
 User = get_user_model()
 
@@ -50,6 +51,7 @@ class PostFormTests(TestCase):
             group=cls.group_old,
             author=cls.user,
         )
+        cls.form = PostForm()
 
     @classmethod
     def tearDownClass(cls):
@@ -96,7 +98,7 @@ class PostFormTests(TestCase):
         """Проверка формы редактирования поста и изменение
         его в базе данных."""
         posts_count = Post.objects.count()
-        group_field_new = PostFormTests.group_new.id
+        group_field_new = self.group_new.id
         form_data = {
             'text': 'test_edit_post',
             'group': group_field_new,
@@ -156,7 +158,7 @@ class PostFormTests(TestCase):
         )
 
     def test_create_post_guest(self):
-        """Проверка формы редактирования поста гостем."""
+        """Проверка формы создания поста гостем."""
         group_field = self.group_old.id
         login_url = reverse('login')
         create_url = reverse('posts:post_create')
@@ -173,3 +175,23 @@ class PostFormTests(TestCase):
         self.assertRedirects(
             response, expected_redirect
         )
+
+    def test_comment(self):
+        """Авторизованный может комментировать"""
+        comment_count = Comment.objects.count()
+        post_id = self.post.pk
+        form_data = {
+            'text': 'Новый комментарий',
+        }
+        response = self.authorized_client.post(
+            reverse('posts:add_comment', kwargs={'post_id': post_id}),
+            data=form_data,
+            follow=True
+        )
+        self.assertEqual(Comment.objects.count(), comment_count + 1)
+        self.assertTrue(Comment.objects.filter(
+            text='Новый комментарий').exists()
+        )
+        self.assertRedirects(response, reverse(
+            'posts:post_detail',
+            kwargs={'post_id': post_id}))
