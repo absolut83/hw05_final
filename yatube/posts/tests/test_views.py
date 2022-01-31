@@ -54,12 +54,11 @@ class PostPagesTests(TestCase):
             author=cls.user,
             text='Текст поста для теста',
             group=cls.group_1,
-            pk=1,
             image=cls.uploaded,
         )
         cls.comment = Comment.objects.create(
             post=cls.post,
-            text="Отлично",
+            text='Отлично',
             author=cls.user
         )
         cache.clear()
@@ -216,18 +215,18 @@ class PostPagesTests(TestCase):
 
     def test_cache_correct_index_page(self):
         """Проверка работы кэширования на главной странице"""
-        response_0 = self.authorized_client.get(reverse("posts:index"))
+        response_0 = self.authorized_client.get(reverse('posts:index'))
 
-        post = Post.objects.create(text="Test", author=self.user,
+        post = Post.objects.create(text='Test', author=self.user,
                                    group=self.group_1)
-        response_1 = self.authorized_client.get(reverse("posts:index"))
+        response_1 = self.authorized_client.get(reverse('posts:index'))
         Post.objects.filter(id=post.id).delete()
 
-        response_2 = self.authorized_client.get(reverse("posts:index"))
+        response_2 = self.authorized_client.get(reverse('posts:index'))
         self.assertEqual(response_1.content, response_2.content)
 
         cache.clear()
-        response_3 = self.authorized_client.get(reverse("posts:index"))
+        response_3 = self.authorized_client.get(reverse('posts:index'))
         self.assertEqual(response_0.content, response_3.content)
 
 
@@ -266,7 +265,7 @@ class FollowViewTest(TestCase):
         )
         cls.comment = Comment.objects.create(
             post=cls.post,
-            text="Отлично",
+            text='Отлично',
             author=cls.user
         )
 
@@ -287,10 +286,10 @@ class FollowViewTest(TestCase):
     def test_unfollow_another_user(self):
         """Авторизованный пользователь,
         может удалять других пользователей из подписок"""
-        self.authorized_client.get(reverse("posts:profile_unfollow",
-                                           kwargs={'username': self.user_2}))
-        self.assertFalse(Follow.objects.filter(user=self.user,
-                                               author=self.user_2).exists())
+        self.authorized_client.get(reverse('posts:profile_unfollow',
+                                           kwargs={'username': self.follow.user}))
+        self.assertFalse(Follow.objects.filter(user=self.follow.author,
+                                               author=self.follow.user).exists())
 
     def test_new_post_follow(self):
         """ Новая запись пользователя будет в ленте у тех кто на него
@@ -299,8 +298,8 @@ class FollowViewTest(TestCase):
         following = User.objects.create(username='following')
         Follow.objects.create(user=self.user, author=following)
         post = Post.objects.create(author=following, text=self.post.text)
-        response = self.authorized_client.get(reverse("posts:follow_index"))
-        self.assertIn(post, response.context['paginator'].object_list)
+        response = self.authorized_client.get(reverse('posts:follow_index'))
+        self.assertIn(post, response.context['page_obj'].object_list)
 
     def test_new_post_unfollow(self):
         """ Новая запись пользователя не будет у тех кто не подписан на него.
@@ -311,10 +310,10 @@ class FollowViewTest(TestCase):
             password='pass'
         )
         self.client.login(username='somobody_temp')
-        response = self.authorized_client.get(reverse("posts:follow_index"))
+        response = self.authorized_client.get(reverse('posts:follow_index'))
         self.assertNotIn(
             self.post.text,
-            response.context['paginator'].object_list
+            response.context['page_obj'].object_list
         )
 
 

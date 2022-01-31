@@ -66,7 +66,7 @@ class PostFormTests(TestCase):
     def test_create_post(self):
         """Проверка формы создания нового поста."""
         posts_count = Post.objects.count()
-        group_field = PostFormTests.group_old.id
+        group_field = self.group_old.id
         form_data = {
             'text': 'test_new_post',
             'group': group_field,
@@ -137,7 +137,7 @@ class PostFormTests(TestCase):
 
     def test_edit_post_guest(self):
         """Проверка формы редактирования поста гостем."""
-        group_field = PostFormTests.group_old.id
+        group_field = self.group_old.id
         login_url = reverse('login')
         create_url = reverse(
             'posts:post_edit',
@@ -190,8 +190,27 @@ class PostFormTests(TestCase):
         )
         self.assertEqual(Comment.objects.count(), comment_count + 1)
         self.assertTrue(Comment.objects.filter(
-            text='Новый комментарий').exists()
+            text=form_data['text']).exists()
         )
         self.assertRedirects(response, reverse(
             'posts:post_detail',
             kwargs={'post_id': post_id}))
+
+    def test_comment_guest(self):
+        """Проверка создания коммента гостем."""
+        post_id = self.post.pk
+        login_url = reverse('login')
+        create_url = reverse('posts:add_comment', kwargs={'post_id': post_id})
+        expected_redirect = f'{login_url}?next={create_url}'
+        form_data = {
+            'text': 'test_comment',
+        }
+        response = self.guest_client.post(
+            reverse('posts:add_comment', kwargs={'post_id': post_id}),
+            data=form_data,
+            follow=True
+        )
+        print(response, expected_redirect)
+        self.assertRedirects(
+            response, expected_redirect
+        )
