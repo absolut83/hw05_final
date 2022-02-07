@@ -210,7 +210,6 @@ class PostFormTests(TestCase):
             data=form_data,
             follow=True
         )
-        print(response, expected_redirect)
         self.assertRedirects(
             response, expected_redirect
         )

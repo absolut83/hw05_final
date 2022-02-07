@@ -286,18 +286,24 @@ class FollowViewTest(TestCase):
     def test_unfollow_another_user(self):
         """Авторизованный пользователь,
         может удалять других пользователей из подписок"""
+        Follow.objects.create(user=self.user, author=self.user_2)
+        follow_count = Follow.objects.count()
+        self.assertTrue(Follow.objects.filter(user=self.user,
+                                              author=self.user_2).exists())
         self.authorized_client.get(
             reverse(
                 'posts:profile_unfollow',
-                kwargs={'username': self.follow.user}
+                kwargs={'username': self.user_2}
             )
         )
+        print(follow_count)
         self.assertFalse(
             Follow.objects.filter(
-                user=self.follow.author,
-                author=self.follow.user
+                user=self.user,
+                author=self.user_2
             ).exists()
         )
+        self.assertEqual(Follow.objects.count(), follow_count - 1)
 
     def test_new_post_follow(self):
         """ Новая запись пользователя будет в ленте у тех кто на него
