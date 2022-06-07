@@ -296,7 +296,6 @@ class FollowViewTest(TestCase):
                 kwargs={'username': self.user_2}
             )
         )
-        print(follow_count)
         self.assertFalse(
             Follow.objects.filter(
                 user=self.user,

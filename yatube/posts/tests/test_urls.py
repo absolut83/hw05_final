@@ -96,5 +96,5 @@ class TaskURLTests(TestCase):
 
     def test_wrong_url_returns_404(self):
         """Страница /fail/ возвращает код 404 пользователю."""
-        response = self.guest_client.get("/unexisting_page/")
+        response = self.guest_client.get('/unexisting_page/')
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
